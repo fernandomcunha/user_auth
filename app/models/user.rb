@@ -7,7 +7,7 @@ class User
   include ActiveModel::SecurePassword
   include BCrypt
 
-  attr_accessor :name, :email, :password_digest
+  attr_accessor :name, :email, :password_digest, :session
 
   has_secure_password validations: false
 
@@ -15,6 +15,7 @@ class User
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validate :email_validations
   validate :password_validations
+  validate :email_uniqueness_in_session
 
   private
 
@@ -56,5 +57,11 @@ class User
 
   def count_characters(string, pattern)
     string.count(pattern)
+  end
+
+  def email_uniqueness_in_session
+    return unless session && session[:users]&.key?(email)
+
+    errors.add(:email, 'email is already taken')
   end
 end

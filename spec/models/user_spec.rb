@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'pry-rails'
 
 RSpec.describe User, type: :model do
-  subject { described_class.new(name: 'FooBar', email: 'foo@bar.com', password: 'PaSsWoRd!@123') }
+  let(:attrs) { { name: 'FooBar', email: 'foo@bar.com', password: 'PaSsWoRd!@123' } }
+
+  subject { described_class.new(attrs) }
 
   describe 'Validations' do
     it { should validate_presence_of(:name) }
@@ -51,6 +54,25 @@ RSpec.describe User, type: :model do
     it 'is not valid with a password missing special characters' do
       subject.password = 'PaSsWoRd123'
       expect(subject).not_to be_valid
+    end
+
+    describe 'email_uniqueness_in_session validation' do
+      let(:session) do
+        { users: { subject.email => { name: subject.name, email: subject.email, password: subject.password_digest } } }
+      end
+
+      it 'is valid when the email is not already in the session' do
+        user = User.new(name: 'BarFoo', email: 'bar@foo.com', password: 'PaSsWoRd!@123', session: session)
+
+        expect(user).to be_valid
+      end
+
+      it 'is invalid when the email is already in the session' do
+        user = User.new(attrs.merge(session: session))
+
+        expect(user).not_to be_valid
+        expect(user.errors[:email]).to include('email is already taken')
+      end
     end
   end
 end

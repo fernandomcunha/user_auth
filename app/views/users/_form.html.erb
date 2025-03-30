@@ -1,0 +1,37 @@
+<%= form_with model: @user, local: true do |form| %>
+  <% if action_name == 'new' || action_name == 'create' %>
+    <div>
+      <%= form.label :name, "Name" %>
+      <%= form.text_field :name, placeholder: "Enter your name" %>
+      <% if @user.errors[:name].any? %>
+        <div>
+          <%= @user.errors[:name].join(", ") %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :email, "Email" %>
+    <%= form.email_field :email, placeholder: "Enter your email" %>
+    <% if @user.errors[:email].any? %>
+      <div>
+        <%= @user.errors[:email].join(", ") %>
+      </div>
+    <% end %>
+  </div>
+
+  <div>
+    <%= form.label :password, "Password" %>
+    <%= form.password_field :password, placeholder: "Enter your password" %>
+    <% if @user.errors[:password].any? %>
+      <div>
+        <%= @user.errors[:password].join(", ") %>
+      </div>
+    <% end %>
+  </div>
+
+  <div>
+    <%= form.submit "Submit" %>
+  </div>
+<% end %>
