@@ -12,6 +12,7 @@ class User
   has_secure_password validations: false
 
   validates :name, presence: true, length: { minimum: 5, maximum: 128 }
+  validates :password, presence: true, length: { minimum: 10, maximum: 72 }
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validate :email_validations
   validate :password_validations
@@ -33,15 +34,8 @@ class User
   end
 
   def password_validations
-    if password.nil? || password.length < 10 || password.length > 72
-      errors.add(:password, 'must be between 10 and 72 characters')
-      return
-    end
+    return if password.nil?
 
-    validate_password_complexity
-  end
-
-  def validate_password_complexity
     digit_count = count_characters(password, '0-9')
     uppercase_count = count_characters(password, 'A-Z')
     lowercase_count = count_characters(password, 'a-z')

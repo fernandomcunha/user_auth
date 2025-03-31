@@ -11,6 +11,8 @@ RSpec.describe User, type: :model do
   describe 'Validations' do
     it { should validate_presence_of(:name) }
     it { should validate_length_of(:name).is_at_least(5).is_at_most(128) }
+    it { should validate_presence_of(:password) }
+    it { should validate_length_of(:password).is_at_least(10).is_at_most(72) }
     it { should validate_presence_of(:email) }
     it { should allow_value('test@example.com').for(:email) }
     it { should_not allow_value('invalid-email').for(:email) }
@@ -28,11 +30,6 @@ RSpec.describe User, type: :model do
 
     it 'is not valid with an email domain longer than 128 characters' do
       subject.email = "foo@#{'a' * 129}.com"
-      expect(subject).not_to be_valid
-    end
-
-    it 'is not valid with a password shorter than 10 characters' do
-      subject.password = 'PaSs123!@'
       expect(subject).not_to be_valid
     end
 
