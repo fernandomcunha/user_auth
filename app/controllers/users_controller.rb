@@ -1,56 +1,48 @@
 # frozen_string_literal: true
 
-require 'pry-rails'
 class UsersController < ApplicationController
+  include SessionManagement
+
   before_action :login_required, only: [:user_page]
 
   def sign_in
-    if request.post?
-      authenticate_user
-    else
-      redirect_to user_page_path if session[:current_user]
-
-      initialize_user
-    end
+    request.post? ? handle_sign_in_post : handle_sign_in_get
   end
 
   def user_page
-    assign_current_user
-
-    assign_ip_info
+    @current_user = current_user
+    @ip_info = IpInfoService.fetch_ip_info(request.remote_ip)
   rescue IpInfoService::IpInfoError => e
-    flash[:alert] = "Failed to fetch IP info: #{e.message}"
+    flash[:alert] = e.message
   end
 
   def new
-    initialize_user
+    @user = User.new
   end
 
   def create
-    @user = build_user
+    @user = User.new(user_params.merge(session: session))
 
     if @user.valid?
-      store_user_in_session
+      store_user_in_session(@user)
 
       flash[:notice] = 'User created successfully!'
 
-      redirect_to root_path
+      redirect_to sign_in_path
     else
       render :new, status: :unprocessable_entity
     end
   end
 
   def destroy
-    email = params[:email]
-
-    if session[:current_user]&.dig('email') == email
+    if current_user&.dig('email') == params[:email]
       session.delete(:current_user)
 
       flash[:notice] = 'You have been signed out successfully.'
 
-      redirect_to root_path, status: :see_other
+      redirect_to sign_in_path, status: :see_other
     else
-      flash[:alert] = "User with email #{email} not found."
+      flash[:alert] = "User with email #{params[:email]} not found."
 
       redirect_to user_page_path, status: :see_other
     end
@@ -62,65 +54,36 @@ class UsersController < ApplicationController
     params.require(:user).permit(:name, :email, :password)
   end
 
-  def build_user
-    User.new(user_params.merge(session: session))
+  def login_required
+    return if current_user
+
+    flash[:alert] = 'You must be signed in to access this page.'
+
+    redirect_to sign_in_path
   end
 
-  def store_user_in_session
-    session[:users] ||= {}
-    session[:users][@user.email] = {
-      name: @user.name,
-      email: @user.email,
-      password: @user.password_digest
-    }
+  def handle_sign_in_post
+    user_data = UserAuthenticationService.new(session, user_params).authenticate
 
-    store_current_user(session[:users][@user.email])
-  end
-
-  def authenticate_user
-    user_data = find_user_in_session
-
-    if valid_user_credentials?(user_data)
+    if user_data
       store_current_user(user_data)
 
       flash[:notice] = 'Signed in successfully!'
 
       redirect_to user_page_path
     else
-      handle_invalid_credentials
+      flash[:alert] = 'Invalid email or password'
+
+      @user = User.new(email: user_params[:email])
+
+      render :sign_in, status: :unprocessable_entity
     end
   end
 
-  def initialize_user
+  def handle_sign_in_get
+    redirect_to user_page_path if current_user
+
     @user = User.new
-  end
-
-  def find_user_in_session
-    session[:users]&.dig(user_params[:email])
-  end
-
-  def valid_user_credentials?(user_data)
-    user_data && BCrypt::Password.new(user_data['password']) == user_params[:password]
-  end
-
-  def store_current_user(user_data)
-    session[:current_user] = user_data
-  end
-
-  def handle_invalid_credentials
-    flash[:alert] = 'Invalid email or password'
-
-    @user = User.new(email: user_params[:email])
-
-    render :sign_in
-  end
-
-  def login_required
-    return if session[:current_user]
-
-    flash[:alert] = 'You must be signed in to access this page.'
-
-    redirect_to sign_in_path
   end
 
   def form_action_path
@@ -128,14 +91,4 @@ class UsersController < ApplicationController
   end
 
   helper_method :form_action_path
-
-  def assign_current_user
-    @current_user = session[:current_user].with_indifferent_access
-  end
-
-  def assign_ip_info
-    ip_address = request.remote_ip
-
-    @ip_info = IpInfoService.fetch_ip_info(ip_address)
-  end
 end

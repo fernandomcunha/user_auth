@@ -123,7 +123,7 @@ RSpec.describe UsersController, type: :request do
         expect(session[:users]).to include('foo@bar.com')
         expect(session[:users]['foo@bar.com'][:name]).to eq('Foo Bar')
         expect(flash[:notice]).to eq('User created successfully!')
-        expect(response).to redirect_to(root_path)
+        expect(response).to redirect_to(sign_in_path)
       end
     end
 
@@ -147,7 +147,7 @@ RSpec.describe UsersController, type: :request do
 
         expect(session[:current_user]).to be_nil
         expect(flash[:notice]).to eq('You have been signed out successfully.')
-        expect(response).to redirect_to(root_path)
+        expect(response).to redirect_to(sign_in_path)
       end
     end
 
