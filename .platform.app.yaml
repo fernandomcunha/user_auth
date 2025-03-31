@@ -1,0 +1,48 @@
+name: 'user-auth'
+
+type: 'ruby:3.3'
+
+variables:
+  env:
+    PIDFILE: "tmp/server.pid" # Allow to start puma directly even if `tmp/pids` directory is not created
+    RAILS_ENV: "production"
+    BUNDLE_WITHOUT: 'development:test'
+    TARGET_RUBY_VERSION: '~>3.3' # this will allow to not fail on PATCH update of the image
+
+hooks:
+  build: |
+    set -e
+
+    export BUNDLER_VERSION="$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n 1)" || $DEFAULT_BUNDLER_VERSION
+    echo "Install bundler $BUNDLER_VERSION"
+    gem install --no-document bundler -v $BUNDLER_VERSION
+
+    echo "Installing gems"
+    [ -d "$PLATFORM_CACHE_DIR/bundle" ] && \
+      rsync -az --delete "$PLATFORM_CACHE_DIR/bundle/" vendor/bundle/
+    mkdir -p "$PLATFORM_CACHE_DIR/bundle"
+    bundle install
+    [ -d "vendor/bundle" ] && \
+      rsync -az --delete vendor/bundle/ "$PLATFORM_CACHE_DIR/bundle/"
+
+web:
+  upstream:
+    socket_family: unix
+  commands:
+    start: "bundle exec puma -b unix://$SOCKET"
+  locations:
+    "/":
+      root: "public"
+      passthru: true
+      expires: 1h
+      allow: true
+
+mounts:
+  "/log":
+    source: local
+    source_path: log
+  "/tmp":
+    source: local
+    source_path: tmp
+
+disk: 2048
