@@ -8,16 +8,17 @@ class IpInfoService
 
   BASE_URL = 'https://ipinfo.io'
 
-  def self.fetch_ip_info
-    new.fetch_ip_info
+  def self.fetch_ip_info(*)
+    new(*).fetch_ip_info
   end
 
-  def initialize
+  def initialize(ip_address)
+    @ip_address = ip_address
     @token = ENV.fetch('IP_INFO_TOKEN')
   end
 
   def fetch_ip_info
-    uri = URI("#{BASE_URL}?token=#{@token}")
+    uri = URI("#{BASE_URL}/#{@ip_address}?token=#{@token}")
     response = Net::HTTP.get_response(uri)
 
     raise IpInfoError, "Failed to fetch IP info: #{response.code}" unless response.is_a?(Net::HTTPSuccess)

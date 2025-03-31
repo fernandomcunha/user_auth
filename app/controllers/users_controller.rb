@@ -10,7 +10,9 @@ class UsersController < ApplicationController
   def user_page
     @current_user ||= session[:current_user].with_indifferent_access
 
-    ip_info = IpInfoService.fetch_ip_info
+    ip_address = request.remote_ip
+
+    ip_info = IpInfoService.fetch_ip_info(ip_address)
     @city = ip_info['city']
     @region = ip_info['region']
     @country = ip_info['country']
