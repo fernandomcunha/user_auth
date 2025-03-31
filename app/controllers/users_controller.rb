@@ -1,21 +1,23 @@
 # frozen_string_literal: true
 
+require 'pry-rails'
 class UsersController < ApplicationController
   before_action :login_required, only: [:user_page]
 
   def sign_in
-    request.post? ? authenticate_user : initialize_user
+    if request.post?
+      authenticate_user
+    else
+      redirect_to user_page_path if session[:current_user]
+
+      initialize_user
+    end
   end
 
   def user_page
-    @current_user ||= session[:current_user].with_indifferent_access
+    assign_current_user
 
-    ip_address = request.remote_ip
-
-    ip_info = IpInfoService.fetch_ip_info(ip_address)
-    @city = ip_info['city']
-    @region = ip_info['region']
-    @country = ip_info['country']
+    assign_ip_info
   rescue IpInfoService::IpInfoError => e
     flash[:alert] = "Failed to fetch IP info: #{e.message}"
   end
@@ -34,7 +36,7 @@ class UsersController < ApplicationController
 
       redirect_to root_path
     else
-      render :new
+      render :new, status: :unprocessable_entity
     end
   end
 
@@ -46,11 +48,11 @@ class UsersController < ApplicationController
 
       flash[:notice] = 'You have been signed out successfully.'
 
-      redirect_to root_path
+      redirect_to root_path, status: :see_other
     else
       flash[:alert] = "User with email #{email} not found."
 
-      redirect_to user_page_path
+      redirect_to user_page_path, status: :see_other
     end
   end
 
@@ -126,4 +128,14 @@ class UsersController < ApplicationController
   end
 
   helper_method :form_action_path
+
+  def assign_current_user
+    @current_user = session[:current_user].with_indifferent_access
+  end
+
+  def assign_ip_info
+    ip_address = request.remote_ip
+
+    @ip_info = IpInfoService.fetch_ip_info(ip_address)
+  end
 end

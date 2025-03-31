@@ -1,37 +1,38 @@
-<%= form_with model: @user, url: form_action_path, local: true do |form| %>
-  <% if action_name == 'new' || action_name == 'create' %>
-    <div>
-      <%= form.label :name, "Name" %>
-      <%= form.text_field :name, placeholder: "Enter your name" %>
+<%= form_with model: @user, url: form_action_path, local: true, html: { class: 'needs-validation' } do |form| %>
+
+  <% if form_action_path == users_path %>
+    <div class="mb-3">
+      <%= form.label :name, "Name", class: "form-label" %>
+      <%= form.text_field :name, class: "form-control", placeholder: "Enter your name" %>
       <% if @user.errors[:name].any? %>
-        <div>
+        <div class="text-danger">
           <%= @user.errors[:name].join(", ") %>
         </div>
       <% end %>
     </div>
   <% end %>
 
-  <div>
-    <%= form.label :email, "Email" %>
-    <%= form.email_field :email, placeholder: "Enter your email" %>
+  <div class="mb-3">
+    <%= form.label :email, "Email", class: "form-label" %>
+    <%= form.email_field :email, class: "form-control", placeholder: "Enter your email" %>
     <% if @user.errors[:email].any? %>
-      <div>
+      <div class="text-danger">
         <%= @user.errors[:email].join(", ") %>
       </div>
     <% end %>
   </div>
-
-  <div>
-    <%= form.label :password, "Password" %>
-    <%= form.password_field :password, placeholder: "Enter your password" %>
+  
+  <div class="mb-3">
+    <%= form.label :password, "Password", class: "form-label" %>
+    <%= form.password_field :password, class: "form-control", placeholder: "Enter your password" %>
     <% if @user.errors[:password].any? %>
-      <div>
+      <div class="text-danger">
         <%= @user.errors[:password].join(", ") %>
       </div>
     <% end %>
   </div>
-
-  <div>
-    <%= form.submit "Submit" %>
+  
+  <div class="d-grid">
+    <%= form.submit form_action_path == users_path ? "Sign Up" : "Sign In", class: "btn btn-primary" %>
   </div>
 <% end %>

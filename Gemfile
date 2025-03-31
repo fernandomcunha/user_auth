@@ -25,6 +25,12 @@ gem 'rubocop', '~> 1.75', require: false
 # Shim to load environment variables from .env into ENV in development
 gem 'dotenv', '~> 3.1'
 
+# Powerful, extensible, and feature-packed frontend toolkit
+gem 'bootstrap', '~> 5.3'
+
+# Sass is an extension of CSS that adds power and elegance to the basic language
+gem 'sassc-rails', '~> 2.1'
+
 group :development do
   # Debugger for Ruby
   gem 'pry-rails', '~> 0.3.11'
