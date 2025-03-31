@@ -38,7 +38,7 @@ end
 
 group :development, :test do
   # Testing framework
-  gem 'rspec-rails', '~> 5.0'
+  gem 'rspec-rails', '~> 7.1'
 
   # FactoryBot is a fixtures replacement with a more straightforward syntax
   gem 'factory_bot_rails', '~> 6.4.4'
