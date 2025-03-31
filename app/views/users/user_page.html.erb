@@ -1,0 +1,11 @@
+<h1>Welcome, <%= @current_user[:name] %>!</h1>
+<p>Email: <%= @current_user[:email] %></p>
+
+<p>Location:</p>
+<ul>
+  <li>City: <%= @city %></li>
+  <li>Region: <%= @region %></li>
+  <li>Country: <%= @country %></li>
+</ul>
+
+<%= link_to 'Sign Out', user_path(@current_user[:email]), data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' } %>

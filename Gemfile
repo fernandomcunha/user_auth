@@ -22,6 +22,9 @@ gem 'thruster', require: false
 # Ruby static code analyzer (a.k.a. linter) and code formatter
 gem 'rubocop', '~> 1.75', require: false
 
+# Shim to load environment variables from .env into ENV in development
+gem 'dotenv', '~> 3.1'
+
 group :development do
   # Debugger for Ruby
   gem 'pry-rails', '~> 0.3.11'
@@ -38,4 +41,10 @@ end
 group :test do
   # One-liners to test common Rails functionality
   gem 'shoulda-matchers', '~> 6.0'
+
+  # Record your test suite's HTTP interactions and replay them during future test runs
+  gem 'vcr', '~> 6.3'
+
+  # Library for stubbing and setting expectations on HTTP requests in Ruby
+  gem 'webmock', '~> 3.25'
 end

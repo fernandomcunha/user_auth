@@ -1,0 +1,62 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://ipinfo.io/?token=<IP_INFO_TOKEN>
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+      Host:
+      - ipinfo.io
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Access-Control-Allow-Origin:
+      - "*"
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Xss-Protection:
+      - 1; mode=block
+      X-Content-Type-Options:
+      - nosniff
+      Referrer-Policy:
+      - strict-origin-when-cross-origin
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Mon, 31 Mar 2025 14:20:25 GMT
+      Vary:
+      - accept-encoding
+      Via:
+      - 1.1 google
+      Strict-Transport-Security:
+      - max-age=2592000; includeSubDomains
+      Alt-Svc:
+      - h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+      Transfer-Encoding:
+      - chunked
+    body:
+      encoding: ASCII-8BIT
+      string: |-
+        {
+          "ip": "191.55.82.254",
+          "hostname": "191-055-082-254.xd-dynamic.algartelecom.com.br",
+          "city": "Patos de Minas",
+          "region": "Minas Gerais",
+          "country": "BR",
+          "loc": "-18.5789,-46.5181",
+          "org": "AS53006 ALGAR TELECOM S/A",
+          "postal": "38700-000",
+          "timezone": "America/Sao_Paulo"
+        }
+  recorded_at: Mon, 31 Mar 2025 14:20:25 GMT
+recorded_with: VCR 6.3.1

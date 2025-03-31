@@ -1,8 +1,21 @@
 # frozen_string_literal: true
 
 class UsersController < ApplicationController
+  before_action :login_required, only: [:user_page]
+
   def sign_in
     request.post? ? authenticate_user : initialize_user
+  end
+
+  def user_page
+    @current_user ||= session[:current_user].with_indifferent_access
+
+    ip_info = IpInfoService.fetch_ip_info
+    @city = ip_info['city']
+    @region = ip_info['region']
+    @country = ip_info['country']
+  rescue IpInfoService::IpInfoError => e
+    flash[:alert] = "Failed to fetch IP info: #{e.message}"
   end
 
   def new
@@ -20,6 +33,22 @@ class UsersController < ApplicationController
       redirect_to root_path
     else
       render :new
+    end
+  end
+
+  def destroy
+    email = params[:email]
+
+    if session[:current_user]&.dig('email') == email
+      session.delete(:current_user)
+
+      flash[:notice] = 'You have been signed out successfully.'
+
+      redirect_to root_path
+    else
+      flash[:alert] = "User with email #{email} not found."
+
+      redirect_to user_page_path
     end
   end
 
@@ -52,7 +81,7 @@ class UsersController < ApplicationController
 
       flash[:notice] = 'Signed in successfully!'
 
-      redirect_to root_path
+      redirect_to user_page_path
     else
       handle_invalid_credentials
     end
@@ -63,11 +92,11 @@ class UsersController < ApplicationController
   end
 
   def find_user_in_session
-    session[:users]&.dig(params[:email])
+    session[:users]&.dig(user_params[:email])
   end
 
   def valid_user_credentials?(user_data)
-    user_data && BCrypt::Password.new(user_data['password']) == params[:password]
+    user_data && BCrypt::Password.new(user_data['password']) == user_params[:password]
   end
 
   def store_current_user(user_data)
@@ -75,10 +104,24 @@ class UsersController < ApplicationController
   end
 
   def handle_invalid_credentials
-    flash.now[:alert] = 'Invalid email or password'
+    flash[:alert] = 'Invalid email or password'
 
-    @user = User.new(email: params[:email])
+    @user = User.new(email: user_params[:email])
 
     render :sign_in
   end
+
+  def login_required
+    return if session[:current_user]
+
+    flash[:alert] = 'You must be signed in to access this page.'
+
+    redirect_to sign_in_path
+  end
+
+  def form_action_path
+    action_name == 'sign_in' ? sign_in_path : users_path
+  end
+
+  helper_method :form_action_path
 end
